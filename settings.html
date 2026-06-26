@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <meta name="theme-color" content="#0f172a" />
+    <title>Settings</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <main class="app-shell">
+      <section class="card record-page">
+        <div class="record-header">
+          <p class="eyebrow">Settings</p>
+          <h2>Preferences</h2>
+        </div>
+
+        <div class="record-card">
+          <button id="reset-data" type="button" class="reset-button">RESET ALL DATA</button>
+          <p id="reset-status" class="reset-status"></p>
+        </div>
+      </section>
+
+      <nav class="bottom-nav" aria-label="Bottom navigation">
+        <a href="index.html" class="nav-item">Calendar</a>
+        <a href="record.html" class="nav-item">Record</a>
+        <a href="settings.html" class="nav-item active">Settings</a>
+      </nav>
+    </main>
+
+    <script>
+      const storageKey = 'habit-tracker-state';
+      const resetButton = document.getElementById('reset-data');
+      const resetStatus = document.getElementById('reset-status');
+
+      resetButton.addEventListener('click', () => {
+        const confirmed = window.confirm('Reset all saved calendar data?');
+        if (!confirmed) return;
+
+        localStorage.removeItem(storageKey);
+        resetStatus.textContent = 'All data cleared.';
+      });
+    </script>
+  </body>
+</html>

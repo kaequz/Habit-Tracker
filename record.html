@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <meta name="theme-color" content="#0f172a" />
+    <title>Record</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <main class="app-shell">
+      <section class="card record-page">
+        <div class="record-header">
+          <p class="eyebrow">Record</p>
+          <h2>Progress</h2>
+        </div>
+
+        <div class="record-card">
+          <div class="stats-summary">
+            <div class="stat-block">
+              <span class="stat-label">✅</span>
+              <strong class="stat-value" id="checks-count">0 days</strong>
+              <div class="mini-bar-track">
+                <div id="checks-bar" class="mini-bar checks-bar"></div>
+              </div>
+            </div>
+            <div class="stat-block">
+              <span class="stat-label">❌</span>
+              <strong class="stat-value" id="x-count">0 days</strong>
+              <div class="mini-bar-track">
+                <div id="x-bar" class="mini-bar x-bar"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <nav class="bottom-nav" aria-label="Bottom navigation">
+        <a href="index.html" class="nav-item">Calendar</a>
+        <a href="record.html" class="nav-item active">Record</a>
+        <a href="settings.html" class="nav-item">Settings</a>
+      </nav>
+    </main>
+
+    <script>
+      const storageKey = 'habit-tracker-state';
+      const checksCountEl = document.getElementById('checks-count');
+      const xCountEl = document.getElementById('x-count');
+      const checksBarEl = document.getElementById('checks-bar');
+      const xBarEl = document.getElementById('x-bar');
+
+      function updateCounts() {
+        const raw = localStorage.getItem(storageKey);
+        if (!raw) {
+          checksCountEl.textContent = '0 days';
+          xCountEl.textContent = '0 days';
+          return;
+        }
+
+        try {
+          const parsed = JSON.parse(raw);
+          const checked = Array.isArray(parsed.checked) ? parsed.checked : [];
+          const crossed = Array.isArray(parsed.crossed) ? parsed.crossed : [];
+
+          const checks = checked.length;
+          const crosses = crossed.length;
+          const maxValue = Math.max(checks, crosses, 1);
+
+          checksCountEl.textContent = `${checks} days`;
+          xCountEl.textContent = `${crosses} days`;
+          checksBarEl.style.width = `${(checks / maxValue) * 100}%`;
+          xBarEl.style.width = `${(crosses / maxValue) * 100}%`;
+        } catch (error) {
+          console.warn('Could not load tracker state', error);
+          checksCountEl.textContent = '0 days';
+          xCountEl.textContent = '0 days';
+          checksBarEl.style.width = '0%';
+          xBarEl.style.width = '0%';
+        }
+      }
+
+      updateCounts();
+      window.addEventListener('storage', updateCounts);
+    </script>
+  </body>
+</html>

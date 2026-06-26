@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <meta name="theme-color" content="#0f172a" />
+    <title>Mobile Blank App</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <main class="app-shell">
+      <section class="card">
+        <div class="calendar-header">
+          <div>
+            <p class="eyebrow">Today</p>
+            <h1 id="calendar-title">Loading…</h1>
+          </div>
+        </div>
+
+        <div class="weekday-row" id="weekday-row"></div>
+        <div class="calendar-grid" id="calendar-grid"></div>
+      </section>
+
+      <nav class="bottom-nav" aria-label="Bottom navigation">
+        <a href="index.html" class="nav-item active">Calendar</a>
+        <a href="record.html" class="nav-item">Record</a>
+        <a href="settings.html" class="nav-item">Settings</a>
+      </nav>
+    </main>
+
+    <script>
+      const titleEl = document.getElementById('calendar-title');
+      const weekdayRowEl = document.getElementById('weekday-row');
+      const calendarGridEl = document.getElementById('calendar-grid');
+      const storageKey = 'habit-tracker-state';
+      let checkedDays = new Set();
+      let crossedDays = new Set();
+      let lastTap = null;
+      let lastTapDateKey = null;
+      const checkEmoji = '✅';
+      const crossEmoji = '❌';
+
+      function getDateKey(year, month, day) {
+        return `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+      }
+
+      function getManilaDateParts(date = new Date()) {
+        const formatter = new Intl.DateTimeFormat('en-PH', {
+          timeZone: 'Asia/Manila',
+          year: 'numeric',
+          month: 'numeric',
+          day: 'numeric',
+          hour: 'numeric',
+          minute: '2-digit',
+          hour12: true
+        });
+
+        const parts = Object.fromEntries(
+          formatter.formatToParts(date).map((part) => [part.type, part.value])
+        );
+
+        return {
+          year: Number(parts.year),
+          month: Number(parts.month),
+          day: Number(parts.day)
+        };
+      }
+
+      function loadState() {
+        const raw = localStorage.getItem(storageKey);
+        if (!raw) return;
+
+        try {
+          const parsed = JSON.parse(raw);
+          checkedDays = new Set(parsed.checked || []);
+          crossedDays = new Set(parsed.crossed || []);
+        } catch (error) {
+          console.warn('Could not load tracker state', error);
+        }
+      }
+
+      function saveState() {
+        localStorage.setItem(storageKey, JSON.stringify({
+          checked: [...checkedDays],
+          crossed: [...crossedDays]
+        }));
+      }
+
+      function persistStateOnExit() {
+        saveState();
+      }
+
+      function renderCalendar() {
+        const now = new Date();
+        const { year, month, day } = getManilaDateParts(now);
+
+        const monthLabel = new Intl.DateTimeFormat('en-PH', {
+          timeZone: 'Asia/Manila',
+          month: 'long',
+          year: 'numeric'
+        }).format(new Date(year, month - 1, 1));
+
+        titleEl.textContent = monthLabel;
+
+        const weekDays = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+        weekdayRowEl.innerHTML = weekDays.map((dayName) => `<span>${dayName}</span>`).join('');
+
+        const firstOfMonth = new Date(year, month - 1, 1);
+        const daysInMonth = new Date(year, month, 0).getDate();
+        const leadingDays = (firstOfMonth.getDay() + 6) % 7;
+        const totalCells = Math.ceil((leadingDays + daysInMonth) / 7) * 7;
+
+        const cells = [];
+        for (let i = 0; i < totalCells; i += 1) {
+          const dateNumber = i - leadingDays + 1;
+          const isCurrentMonth = dateNumber > 0 && dateNumber <= daysInMonth;
+          const isToday = isCurrentMonth && dateNumber === day;
+          const isMuted = !isCurrentMonth;
+          const dateKey = isCurrentMonth ? getDateKey(year, month, dateNumber) : '';
+          const isChecked = isCurrentMonth && checkedDays.has(dateKey);
+          const isCrossed = isCurrentMonth && crossedDays.has(dateKey);
+          const statusEmoji = isChecked ? checkEmoji : isCrossed ? crossEmoji : '';
+
+          cells.push(`
+            <div class="day-cell${isMuted ? ' muted' : ''}${isToday ? ' active' : ''}">
+              <button class="day" type="button" data-date="${dateKey}" ${isMuted ? 'disabled' : ''}>
+                <span class="day-number">${isCurrentMonth ? dateNumber : ''}</span>
+                <span class="day-status">${statusEmoji}</span>
+              </button>
+            </div>
+          `);
+        }
+
+        calendarGridEl.innerHTML = cells.join('');
+      }
+
+      calendarGridEl.addEventListener('click', (event) => {
+        const button = event.target.closest('.day');
+        if (!button || button.disabled) return;
+
+        const dateKey = button.dataset.date;
+        if (!dateKey) return;
+
+        const now = Date.now();
+        if (lastTap && now - lastTap < 300 && lastTapDateKey === dateKey) {
+          if (crossedDays.has(dateKey)) {
+            crossedDays.delete(dateKey);
+          } else {
+            crossedDays.add(dateKey);
+            checkedDays.delete(dateKey);
+          }
+          lastTap = null;
+          lastTapDateKey = null;
+        } else {
+          if (checkedDays.has(dateKey)) {
+            checkedDays.delete(dateKey);
+          } else {
+            checkedDays.add(dateKey);
+            crossedDays.delete(dateKey);
+          }
+          lastTap = now;
+          lastTapDateKey = dateKey;
+        }
+
+        saveState();
+        renderCalendar();
+      });
+
+      loadState();
+      renderCalendar();
+      window.addEventListener('beforeunload', persistStateOnExit);
+      document.addEventListener('visibilitychange', () => {
+        if (document.visibilityState === 'hidden') {
+          persistStateOnExit();
+        }
+      });
+      setInterval(renderCalendar, 60000);
+    </script>
+  </body>
+</html>
