@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 180" role="img" aria-label="Habit Tracker logo">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#1f1338" />
+      <stop offset="100%" stop-color="#09090f" />
+    </linearGradient>
+    <linearGradient id="glass" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#8b5cf6" />
+      <stop offset="100%" stop-color="#4c1d95" />
+    </linearGradient>
+    <linearGradient id="shine" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ffffff" stop-opacity="0.3" />
+      <stop offset="100%" stop-color="#ffffff" stop-opacity="0" />
+    </linearGradient>
+  </defs>
+  <rect width="180" height="180" rx="44" fill="url(#bg)" />
+  <rect x="28" y="28" width="124" height="124" rx="34" fill="#ffffff" opacity="0.08" />
+  <rect x="44" y="44" width="92" height="92" rx="24" fill="url(#glass)" opacity="0.95" />
+  <rect x="44" y="44" width="92" height="92" rx="24" fill="url(#shine)" />
+  <path d="M70 94l16 16 28-34" fill="none" stroke="#f8fafc" stroke-width="12" stroke-linecap="round" stroke-linejoin="round" />
+</svg>

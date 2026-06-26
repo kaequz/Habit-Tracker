@@ -52,9 +52,9 @@
 
     document.title = doc.title || 'Habit Tracker';
     runPageScripts(scripts);
-    window.dispatchEvent(new Event('router:content-ready'));
     setActiveLink(pageFile);
     history.pushState({ page: pageFile }, '', targetUrl);
+    window.dispatchEvent(new CustomEvent('router:content-ready', { detail: { pageFile } }));
     window.scrollTo(0, 0);
   }
 
