@@ -10,17 +10,21 @@ body {
   touch-action: manipulation;
   -webkit-user-select: none;
   user-select: none;
+  overflow: hidden;
+  height: 100vh;
+  width: 100vw;
   background: radial-gradient(circle at top, #2a103f 0%, #08050d 60%, #020204 100%);
   color: #f5eaff;
 }
 
 .app-shell {
-  min-height: 100vh;
+  height: 100vh;
   display: flex;
   align-items: center;
   justify-content: center;
   padding: 20px 20px 110px;
   position: relative;
+  overflow: hidden;
 }
 
 .card {

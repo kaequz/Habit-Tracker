@@ -37,7 +37,6 @@
       let crossedDays = new Set();
       let lastTap = null;
       let lastTapDateKey = null;
-      let lastTouchEnd = 0;
       const checkEmoji = '✅';
       const crossEmoji = '❌';
 
@@ -135,26 +134,6 @@
         calendarGridEl.innerHTML = cells.join('');
       }
 
-      function preventZoom(event) {
-        if (event.touches && event.touches.length > 1) {
-          event.preventDefault();
-        }
-      }
-
-      document.addEventListener('touchstart', preventZoom, { passive: false });
-      document.addEventListener('touchmove', (event) => {
-        if (event.touches && event.touches.length > 1) {
-          event.preventDefault();
-        }
-      }, { passive: false });
-      document.addEventListener('touchend', (event) => {
-        const now = Date.now();
-        if (now - lastTouchEnd < 300) {
-          event.preventDefault();
-        }
-        lastTouchEnd = now;
-      }, { passive: false });
-
       calendarGridEl.addEventListener('click', (event) => {
         const button = event.target.closest('.day');
         if (!button || button.disabled) return;
@@ -185,10 +164,6 @@
 
         saveState();
         renderCalendar();
-      });
-
-      calendarGridEl.addEventListener('dblclick', (event) => {
-        event.preventDefault();
       });
 
       loadState();
