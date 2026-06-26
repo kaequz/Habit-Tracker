@@ -134,6 +134,19 @@
         calendarGridEl.innerHTML = cells.join('');
       }
 
+      function preventZoom(event) {
+        if (event.touches && event.touches.length > 1) {
+          event.preventDefault();
+        }
+      }
+
+      document.addEventListener('touchstart', preventZoom, { passive: false });
+      document.addEventListener('touchend', (event) => {
+        if (event.touches && event.touches.length === 0) {
+          event.preventDefault();
+        }
+      }, { passive: false });
+
       calendarGridEl.addEventListener('click', (event) => {
         const button = event.target.closest('.day');
         if (!button || button.disabled) return;
@@ -164,6 +177,10 @@
 
         saveState();
         renderCalendar();
+      });
+
+      calendarGridEl.addEventListener('dblclick', (event) => {
+        event.preventDefault();
       });
 
       loadState();
