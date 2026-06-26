@@ -7,6 +7,9 @@ body {
   font-family: "SF Pro Display", "SF Pro Text", "Apple Systems", "Segoe UI", "Helvetica Neue", Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  touch-action: manipulation;
+  -webkit-user-select: none;
+  user-select: none;
   background: radial-gradient(circle at top, #2a103f 0%, #08050d 60%, #020204 100%);
   color: #f5eaff;
 }
@@ -93,6 +96,8 @@ body {
   flex-direction: column;
   align-items: center;
   gap: 4px;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
 }
 
 .day:hover,
