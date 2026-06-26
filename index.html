@@ -30,14 +30,13 @@
     </main>
 
     <script>
-      const titleEl = document.getElementById('calendar-title');
-      const weekdayRowEl = document.getElementById('weekday-row');
-      const calendarGridEl = document.getElementById('calendar-grid');
       const storageKey = 'habit-tracker-state';
       let checkedDays = new Set();
       let crossedDays = new Set();
       let lastTap = null;
       let lastTapDateKey = null;
+      let calendarIntervalId = null;
+      let calendarHandlersBound = false;
       const checkEmoji = '✅';
       const crossEmoji = '❌';
 
@@ -92,6 +91,12 @@
       }
 
       function renderCalendar() {
+        const titleEl = document.getElementById('calendar-title');
+        const weekdayRowEl = document.getElementById('weekday-row');
+        const calendarGridEl = document.getElementById('calendar-grid');
+
+        if (!titleEl || !weekdayRowEl || !calendarGridEl) return;
+
         const now = new Date();
         const { year, month, day } = getManilaDateParts(now);
 
@@ -135,47 +140,73 @@
         calendarGridEl.innerHTML = cells.join('');
       }
 
-      calendarGridEl.addEventListener('click', (event) => {
-        const button = event.target.closest('.day');
-        if (!button || button.disabled) return;
+      function initCalendar() {
+        const calendarGridEl = document.getElementById('calendar-grid');
+        if (!calendarGridEl) return;
 
-        const dateKey = button.dataset.date;
-        if (!dateKey) return;
-
-        const now = Date.now();
-        if (lastTap && now - lastTap < 300 && lastTapDateKey === dateKey) {
-          if (crossedDays.has(dateKey)) {
-            crossedDays.delete(dateKey);
-          } else {
-            crossedDays.add(dateKey);
-            checkedDays.delete(dateKey);
-          }
-          lastTap = null;
-          lastTapDateKey = null;
-        } else {
-          if (checkedDays.has(dateKey)) {
-            checkedDays.delete(dateKey);
-          } else {
-            checkedDays.add(dateKey);
-            crossedDays.delete(dateKey);
-          }
-          lastTap = now;
-          lastTapDateKey = dateKey;
+        if (calendarIntervalId) {
+          clearInterval(calendarIntervalId);
         }
 
-        saveState();
+        if (!calendarHandlersBound) {
+          window.addEventListener('beforeunload', persistStateOnExit);
+          document.addEventListener('visibilitychange', () => {
+            if (document.visibilityState === 'hidden') {
+              persistStateOnExit();
+            }
+          });
+          calendarHandlersBound = true;
+        }
+
+        loadState();
         renderCalendar();
-      });
 
-      loadState();
-      renderCalendar();
-      window.addEventListener('beforeunload', persistStateOnExit);
-      document.addEventListener('visibilitychange', () => {
-        if (document.visibilityState === 'hidden') {
-          persistStateOnExit();
+        calendarGridEl.addEventListener('click', (event) => {
+          const button = event.target.closest('.day');
+          if (!button || button.disabled) return;
+
+          const dateKey = button.dataset.date;
+          if (!dateKey) return;
+
+          const now = Date.now();
+          if (lastTap && now - lastTap < 300 && lastTapDateKey === dateKey) {
+            if (crossedDays.has(dateKey)) {
+              crossedDays.delete(dateKey);
+            } else {
+              crossedDays.add(dateKey);
+              checkedDays.delete(dateKey);
+            }
+            lastTap = null;
+            lastTapDateKey = null;
+          } else {
+            if (checkedDays.has(dateKey)) {
+              checkedDays.delete(dateKey);
+            } else {
+              checkedDays.add(dateKey);
+              crossedDays.delete(dateKey);
+            }
+            lastTap = now;
+            lastTapDateKey = dateKey;
+          }
+
+          saveState();
+          renderCalendar();
+        });
+
+        calendarIntervalId = setInterval(renderCalendar, 60000);
+      }
+
+      window.addEventListener('router:content-ready', () => {
+        if (window.location.pathname.endsWith('index.html') || window.location.pathname === '/' || window.location.pathname.endsWith('/')) {
+          initCalendar();
         }
       });
-      setInterval(renderCalendar, 60000);
+
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initCalendar);
+      } else {
+        initCalendar();
+      }
     </script>
   </body>
 </html>

@@ -52,6 +52,7 @@
 
     document.title = doc.title || 'Habit Tracker';
     runPageScripts(scripts);
+    window.dispatchEvent(new Event('router:content-ready'));
     setActiveLink(pageFile);
     history.pushState({ page: pageFile }, '', targetUrl);
     window.scrollTo(0, 0);
